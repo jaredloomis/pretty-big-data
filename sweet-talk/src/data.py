@@ -2,12 +2,36 @@ import numpy as np
 from keras.preprocessing.sequence import _remove_long_seq
 
 
-class Parser(object):
-    def __init__(self, words_embeddings):
-        """
-        :param words_embeddings: Dictionary string->vector
-        """
-        self.words_embeddings = words_embeddings
+class WordVec(object):
+    def __init__(self, word_to_token, token_to_vector):
+        self.word_to_token = word_to_token
+        self.token_to_vector = token_to_vector
+
+    def as_vector(self, word):
+        if isinstance(word, str):
+            return self.token_to_vector[self.word_to_token[word]]
+        elif isinstance(word, int):
+            return self.token_to_vector[word]
+        else:
+            try:
+                word.shape
+                return word
+            except:
+                raise Exception("Can't convert value to vector: ", word)
+
+    def as_word(self, vector):
+        if isinstance(vector, int):
+            for word, token in self.word_to_token.items():
+                if token == vector:
+                    return word
+        elif isinstance(vector, str):
+            return vector
+        else:
+            try:
+                i = 1
+            except:
+                raise Exception("Can't convert value to word: ", vector)
+
 
 def vector_to_word_list(vector_array, word_dict, default="INVALID"):
     """
@@ -23,9 +47,9 @@ def vector_to_word_list(vector_array, word_dict, default="INVALID"):
 
     return ret
 
+
 def vector_to_word(vector, word_dict, default=None):
     for k, v in word_dict.items():
-        print("SHAPE OF DICT VALUES:", v.shape)
         if np.array_equal(v, vector[-1:-50]):
             return k
 
